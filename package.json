@@ -1,0 +1,69 @@
+{
+  "name": "aikumic",
+  "version": "0.0.1",
+  "description": "Aikumamic Microphone Library",
+  "author": "Mat Bettinson (mat.bettinson@gmail.com)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Lingomat/aikumic/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:Lingomat/aikumic.git"
+  },
+  "files": [
+    "dist/src"
+  ],
+  "testGlob": "./dist/test/**/*.spec.js?(x)",
+  "homepage": "https://github.com/Lingomat/aikumic#readme",
+  "keywords": [
+    "typescript",
+    "tdd"
+  ],
+  "main": "dist/src/index.js",
+  "browser": "dist/src/index.js",
+  "scripts": {
+    "build": "tsc -d",
+    "bundle": "webpack --progress",
+    "pretest": "rimraf dist && yarn build && yarn bundle",
+    "reset": "rimraf node_modules dist && yarn install && yarn test",
+    "test": "yarn test:node && yarn test:browser",
+    "test:node": "mocha --require dist/test/setup.js --require source-map-support/register --reporter mocha-env-reporter dist/test/*.spec.js",
+    "test:browser": "karma start --single-run",
+    "start": "rimraf dist && yarn build && concurrently --kill-others --success first \"yarn build -- -w\" \"webpack-dev-server --no-info\""
+  },
+  "devDependencies": {
+    "@types/chai": "~4.0.1",
+    "@types/mocha": "~2.2.41",
+    "@types/sinon": "~4.1.0",
+    "@types/sinon-chai": "~2.7.28",
+    "chai": "~4.1.0",
+    "chai-subset": "~1.6.0",
+    "concurrently": "~3.5.0",
+    "glob": "~7.1.2",
+    "karma": "~2.0.0",
+    "karma-chrome-launcher": "~2.2.0",
+    "karma-env-reporter": "~1.0.13",
+    "karma-firefox-launcher": "~1.1.0",
+    "karma-mocha": "~1.3.0",
+    "mocha": "~4.1.0",
+    "mocha-env-reporter": "~3.0.0",
+    "mocha-loader": "~1.1.1",
+    "rimraf": "~2.6.1",
+    "sinon": "~4.1.0",
+    "sinon-chai": "~2.14.0",
+    "source-map-support": "~0.5.0",
+    "typescript": "~2.6.2",
+    "tslib": "~1.9.0",
+    "webpack": "~3.9.0",
+    "webpack-dev-server": "~2.9.0"
+  },
+  "peerDependencies": {
+    "tslib": "~1.7.1"
+  },
+  "dependencies": {
+    "@types/chai-as-promised": "^7.1.0",
+    "chai-as-promised": "^7.1.1",
+    "rxjs": "^5.5.6"
+  }
+}
