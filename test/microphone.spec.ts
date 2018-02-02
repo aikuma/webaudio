@@ -104,6 +104,16 @@ describe('microphone', () => {
       expect(mic.isPlaying()).to.equal(false)
     })
 
+    it('can export a segment to a wav', async function() {
+      let wav = mic.exportSegmentWav(1)
+      expect(wav).to.be.a('blob')
+    })
+
+    it('can export all to a wav', async function() {
+      let wav = mic.exportAllWav()
+      expect(wav).to.be.a('blob')
+    })
+
     it('can clear', function() {
       mic.clear()
       expect(mic.getSegmentCount()).to.equal(0)

@@ -304,6 +304,20 @@ export class Microphone {
     await this._playBuffers(this.finalBuffers)
   }
 
+  exportSegmentWav(segment: number): Blob {
+    if (segment > this.finalBuffers.length -1) {
+      throw new Error('segment out of range')
+    }
+    return this._arraysToWav([this.finalBuffers[segment]])
+  }
+
+  exportAllWav(): Blob | null {
+    if (this.finalBuffers.length === 0) {
+      return null
+    }
+    return this._arraysToWav(this.finalBuffers)
+  }
+
   _playBuffers(buffers: Float32Array[]): Promise<any> {
     return new Promise((resolve, reject) => {
       if (this.playing) {
@@ -394,6 +408,71 @@ export class Microphone {
       }
     })
   }
+  // Wave writing stuff
+  //
+  _arraysToWav (audioData: Float32Array[], channels = 1 , sampleRate = this.config.sampleRate): Blob {
+    const floatTo16Bit = (samples: Float32Array): Int16Array => {
+      var buffer = new ArrayBuffer(samples.length * 2)
+      var view = new DataView(buffer)
+      floatTo16BitPCM(view, 0, samples)
+      return new Int16Array(buffer)
+    }
+    const floatTo16BitPCM = (output: DataView, offset: number, input: Float32Array) => {
+      for (let i = 0; i < input.length; i++, offset += 2) {
+        let s = Math.max(-1, Math.min(1, input[i]))
+        output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true)
+      }
+    }
+    const writeString = (view: DataView, offset: number, string: string) => {
+      for (let i = 0; i < string.length; i++) {
+        view.setUint8(offset + i, string.charCodeAt(i))
+      }
+    }
+    const encodeWAV = (inputArrays: Float32Array[], numChannels: number, sampleRate: number): DataView => {
+      let rTotalLen: number = 0
+      for (let r of inputArrays) {
+        rTotalLen += r.length
+      }
+      var buffer = new ArrayBuffer(44 + rTotalLen * 2)
+      var view = new DataView(buffer)
+      /* RIFF identifier */
+      writeString(view, 0, 'RIFF')
+      /* RIFF chunk length */
+      view.setUint32(4, 36 + rTotalLen * 2, true)
+      /* RIFF type */
+      writeString(view, 8, 'WAVE')
+      /* format chunk identifier */
+      writeString(view, 12, 'fmt ')
+      /* format chunk length */
+      view.setUint32(16, 16, true)
+      /* sample format (raw) */
+      view.setUint16(20, 1, true)
+      /* channel count */
+      view.setUint16(22, numChannels, true)
+      /* sample rate */
+      view.setUint32(24, sampleRate, true)
+      /* byte rate (sample rate * block align) */
+      view.setUint32(28, sampleRate * 4, true)
+      /* block align (channel count * bytes per sample) */
+      view.setUint16(32, numChannels * 2, true)
+      /* bits per sample */
+      view.setUint16(34, 16, true)
+      /* data chunk identifier */
+      writeString(view, 36, 'data')
+      /* data chunk length */
+      view.setUint32(40, rTotalLen * 2, true)
+      let offset: number = 0
+      for (let r of inputArrays) {
+        floatTo16BitPCM(view, 44 + (offset * 2), r)
+        offset += r.length
+      }
+      return view
+    }
 
+    var blob = new Blob([encodeWAV(audioData, channels, sampleRate)], {
+      type: 'audio/wav'
+    })
+    return blob
+  }
 
 }
