@@ -39,3 +39,6 @@ dist
 .vscode
 
 .idea
+
+#packed npm node_modules
+*.tgz

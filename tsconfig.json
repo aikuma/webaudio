@@ -5,10 +5,10 @@
       "es2015",
       "dom"
     ],
-    "module": "commonjs",
+    "module": "es6",
     "target": "es5",
     "strict": false,
-    "importHelpers": true,
+    "importHelpers": false,
     "noImplicitReturns": true,
     "strictNullChecks": false,
     "sourceMap": true,

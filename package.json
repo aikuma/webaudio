@@ -1,6 +1,6 @@
 {
   "name": "aikumic",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "description": "Aikumamic Microphone Library",
   "author": "Mat Bettinson (mat.bettinson@gmail.com)",
   "license": "MIT",
@@ -17,8 +17,8 @@
   "testGlob": "./dist/test/**/*.spec.js?(x)",
   "homepage": "https://github.com/Lingomat/aikumic#readme",
   "keywords": [
-    "typescript",
-    "tdd"
+    "microphone",
+    "web audio"
   ],
   "main": "dist/src/index.js",
   "browser": "dist/src/index.js",
@@ -34,10 +34,12 @@
   },
   "devDependencies": {
     "@types/chai": "~4.0.1",
+    "@types/chai-as-promised": "^7.1.0",
     "@types/mocha": "~2.2.41",
     "@types/sinon": "~4.1.0",
     "@types/sinon-chai": "~2.7.28",
     "chai": "~4.1.0",
+    "chai-as-promised": "^7.1.1",
     "chai-subset": "~1.6.0",
     "concurrently": "~3.5.0",
     "glob": "~7.1.2",
@@ -53,17 +55,12 @@
     "sinon": "~4.1.0",
     "sinon-chai": "~2.14.0",
     "source-map-support": "~0.5.0",
-    "typescript": "~2.6.2",
     "tslib": "~1.9.0",
+    "typescript": "~2.6.2",
     "webpack": "~3.9.0",
     "webpack-dev-server": "~2.9.0"
   },
-  "peerDependencies": {
-    "tslib": "~1.7.1"
-  },
   "dependencies": {
-    "@types/chai-as-promised": "^7.1.0",
-    "chai-as-promised": "^7.1.1",
     "rxjs": "^5.5.6"
   }
 }
