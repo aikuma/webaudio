@@ -1,7 +1,7 @@
 {
   "name": "aikumic",
-  "version": "0.0.3",
-  "description": "Aikumamic Microphone Library",
+  "version": "0.0.4",
+  "description": "Aikumic Microphone Library",
   "author": "Mat Bettinson (mat.bettinson@gmail.com)",
   "license": "MIT",
   "bugs": {
@@ -62,5 +62,8 @@
   },
   "dependencies": {
     "rxjs": "^5.5.6"
+  },
+  "peerDependencies": {
+    "tslib":"~1.9.0"
   }
 }

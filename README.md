@@ -22,6 +22,8 @@ how to debug (browser):
  - run `npm start` to run a development server
  - open `http://localhost:8080/webtest.bundle` to run live tests that will update while you change the source code
 
+Based on https://github.com/wix/typescript-boilerplate
+
 ## API example
 
 ```
@@ -36,3 +38,4 @@ mic.stop().then(() => {
   wavblob = mic.exportAllWav()
 })
 ```
+
