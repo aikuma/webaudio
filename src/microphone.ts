@@ -28,7 +28,6 @@ export class Microphone {
   sourceNode: MediaStreamAudioSourceNode
   stream: MediaStream
   progressSubject: Subject<any> = new Subject()
-  totalLength: number
   node: ScriptProcessorNode
   config: {bufferLen: number, numChannels: number, sampleRate: number} = {bufferLen: 8192, numChannels: 1, sampleRate: 16000}
   recording: boolean = false
@@ -38,7 +37,7 @@ export class Microphone {
   stopTick: number = 0
   startFlag: boolean = false
   worker: Worker
-  startRecording: Date
+  startRecording: Date = null
   tempElapsed: number = 0
   finalBuffers: Float32Array[] = []
   callbacks: {getBuffer: Function[]} = {
@@ -62,7 +61,6 @@ export class Microphone {
   _init() {
     this.debug('init()')
     this.recording = false
-    this.totalLength = 0
     this.finalBuffers = []
     this.hasData = false
     this._initWorker()
@@ -118,7 +116,6 @@ export class Microphone {
         rtype = 1 // fade in
         this.startFlag = false
       }
-      this.totalLength += cdat.length
       this.worker.postMessage({
         command: 'record',
         type: rtype,
@@ -128,6 +125,7 @@ export class Microphone {
     this.sourceNode.connect(this.node)
     this.node.connect(this.audioContext.destination) 
     this.startRecording = new Date()
+    this.tempElapsed = 0
     this.startFlag = true
     this.recording = true
     this.stopping = false
@@ -143,7 +141,11 @@ export class Microphone {
   }
 
   getElapsed(): number {
-    return ~~((this.totalLength / this.audioContext.sampleRate) * 1000)
+    let tl: number = 0
+    for (let f of this.finalBuffers) {
+      tl += f.length
+    }
+    return ~~((tl / this.config.sampleRate) * 1000) + this.tempElapsed
   }
   isRecording(): boolean {
     return this.recording
@@ -268,6 +270,8 @@ export class Microphone {
               rTotalLen += r.length
             }
             this.finalBuffers.push(this.mergeBuffers(results, rTotalLen))
+            this.tempElapsed = 0
+            this.startRecording = null
             console.log('finalbuff', this.finalBuffers)
             this.processing = false
             this.worker.postMessage({command: 'clear'})
@@ -280,7 +284,6 @@ export class Microphone {
 
   clear() {
     this.recording = false
-    this.totalLength = 0
     this.finalBuffers = []
     this.hasData = false
     this.worker.postMessage({command: 'clear'})
