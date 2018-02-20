@@ -28,7 +28,6 @@ export class Microphone {
   sourceNode: MediaStreamAudioSourceNode
   stream: MediaStream
   progressSubject: Subject<any> = new Subject()
-  tempLength: number
   totalLength: number
   node: ScriptProcessorNode
   config: {bufferLen: number, numChannels: number, sampleRate: number} = {bufferLen: 8192, numChannels: 1, sampleRate: 16000}
@@ -41,7 +40,6 @@ export class Microphone {
   worker: Worker
   startRecording: Date
   tempElapsed: number = 0
-  originalFrameLength: number[] = []
   finalBuffers: Float32Array[] = []
   callbacks: {getBuffer: Function[]} = {
     getBuffer: []
@@ -64,7 +62,6 @@ export class Microphone {
   _init() {
     this.debug('init()')
     this.recording = false
-    this.originalFrameLength = []
     this.totalLength = 0
     this.finalBuffers = []
     this.hasData = false
@@ -146,14 +143,7 @@ export class Microphone {
   }
 
   getElapsed(): number {
-    let rslen = 0
-    for (let b of this.originalFrameLength) {
-      rslen += b
-    }
-    let elapsed = ~~((rslen / this.audioContext.sampleRate) * 1000)
-    elapsed += this.tempElapsed // add the temp time
-    //return let e =  ~~((this.totalLength / this.audioContext.sampleRate) * 1000)
-    return elapsed
+    return ~~((this.totalLength / this.audioContext.sampleRate) * 1000)
   }
   isRecording(): boolean {
     return this.recording
@@ -290,7 +280,6 @@ export class Microphone {
 
   clear() {
     this.recording = false
-    this.originalFrameLength = []
     this.totalLength = 0
     this.finalBuffers = []
     this.hasData = false
