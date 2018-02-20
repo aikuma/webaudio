@@ -22,10 +22,11 @@ export class WebAudioPlayer {
   scriptBufferLength: number
   updateInterval: number
   source: AudioBufferSourceNode
-  progressSubject: Subject<any> = new Subject()
+  progressSubject: Subject<number> = new Subject()
   startPlay: Date
   startOffset: number
   debugMode: boolean = false
+  pinterval: number = null
   constructor(config?: {audioContext?: AudioContext, debug?: boolean}) {
     this.audioContext = config && config.audioContext ? config.audioContext : new AudioContext()
     this.debugMode = config && config.debug ? config.debug : false
@@ -88,9 +89,7 @@ export class WebAudioPlayer {
     this.source.connect(this.audioContext.destination)
     this.ended = false
     this.source.onended = () => {
-      if (this.playing) {
-        this.playing = false
-      }
+      this.playing = false
       this.debug('ended')
       this.ended = true
       this.progressSubject.next(-1)
@@ -106,13 +105,18 @@ export class WebAudioPlayer {
   }
 
   startProgress() {
-    setTimeout(() => {
-      let now = new Date()
-      let elapsed = (now.valueOf() - this.startPlay.valueOf() ) / 1000
-      this.currentTime = this.startOffset + elapsed
-      this.progressSubject.next(this.currentTime)
-      if (this.playing) {
-        this.startProgress()
+    if (this.pinterval) {
+      return
+    }
+    this.pinterval = setInterval(() => {
+      if (!this.playing || this.ended) {
+        clearInterval(this.pinterval)
+        this.pinterval = null
+      } else {
+        let now = new Date()
+        let elapsed = (now.valueOf() - this.startPlay.valueOf() ) / 1000
+        this.currentTime = this.startOffset + elapsed
+        this.progressSubject.next(this.currentTime)
       }
     }, 100)
   }
@@ -137,8 +141,8 @@ export class WebAudioPlayer {
     this.currentTime = position
   }
   // observer emits -1 for media ended
-  observeProgress(): Observable<number> {
-    return this.progressSubject.asObservable()
+  observeProgress(): Subject<number> {
+    return this.progressSubject
   }
 
   playBuffer(audioBuf: Float32Array, sampleRate: number): void {

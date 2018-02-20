@@ -26,7 +26,7 @@ export function aikumicWorker() {
   }
   function init(config: {sampleRate: number}) {
     sampleRate = config.sampleRate
-    console.log('worker init', config)
+    //console.log('worker init', config)
     db_open()
     .then((d) => {
       db = d
@@ -35,10 +35,10 @@ export function aikumicWorker() {
   }
   function record(inputBuffer: Float32Array, dtype: number) {
     if (dtype === 1) {
-      console.log('fade in')
+      //console.log('fade in')
       fade('in', inputBuffer)
     } else if (dtype === 2) {
-      console.log('fade out')
+      //console.log('fade out')
       fade('out', inputBuffer)
     }
     recBuffers.push(inputBuffer)
@@ -80,7 +80,7 @@ export function aikumicWorker() {
         cursor.continue()
       }
       else {
-        console.log('tempLength', tempLength)
+        //console.log('tempLength', tempLength)
         if (tempLength > 0) {
           let tdata = mergeBuffers(recBuffers, tempLength)
           self.postMessage({command: 'streamBuffer', data: tdata, remaining: 0})
@@ -91,6 +91,7 @@ export function aikumicWorker() {
   
   function clear() {
     recLength = 0
+    tempLength = 0
     recBuffers = []
     db_clear('rawdata')
   }
@@ -108,18 +109,17 @@ export function aikumicWorker() {
     return new Promise((resolve, reject) => {
       let req = indexedDB.open('aikumic', 1)
       req.onsuccess = function() {
-        console.log('db open success')
+        //console.log('db open success')
         resolve(this.result)
       }
       req.onerror = function(evt: ErrorEvent) {
-        console.log('db open fail', evt.target)
+        //console.log('db open fail', evt.target)
         reject(evt.target)
       }
       req.onupgradeneeded = function(ev: IDBVersionChangeEvent) {
-        console.log('upgrade needed')
+        //console.log('upgrade needed')
         let d = this.result
         let oStore1 = d.createObjectStore("rawdata", { autoIncrement : true })
-
         Promise.all([
           db_req(oStore1.transaction)
         ]).then(() => {

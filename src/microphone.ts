@@ -139,7 +139,8 @@ export class Microphone {
     }
     this.progressSubject.complete()
   }
-
+  // construct elapsed from the samples we have in final buffers plus
+  // a temporary timer. 
   getElapsed(): number {
     let tl: number = 0
     for (let f of this.finalBuffers) {
