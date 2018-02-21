@@ -38,7 +38,6 @@ export class Microphone {
   startFlag: boolean = false
   worker: Worker
   startRecording: Date = null
-  tempElapsed: number = 0
   finalBuffers: Float32Array[] = []
   callbacks: {getBuffer: Function[]} = {
     getBuffer: []
@@ -46,6 +45,7 @@ export class Microphone {
   debugMode: boolean
   obsWorker: Subject<any>
   processing: boolean = false
+  pinterval: number = null
   constructor(config?: {audioContext?: AudioContext, debug?: boolean, resampleRate?: number}) {
     this.audioContext = config && config.audioContext ? config.audioContext : new AudioContext()
     this.debugMode = config && config.debug ? config.debug : false
@@ -125,7 +125,6 @@ export class Microphone {
     this.sourceNode.connect(this.node)
     this.node.connect(this.audioContext.destination) 
     this.startRecording = new Date()
-    this.tempElapsed = 0
     this.startFlag = true
     this.recording = true
     this.stopping = false
@@ -146,7 +145,10 @@ export class Microphone {
     for (let f of this.finalBuffers) {
       tl += f.length
     }
-    return ~~((tl / this.config.sampleRate) * 1000) + this.tempElapsed
+    let tmp = this.startRecording ? 
+      (new Date().valueOf() - this.startRecording.valueOf() ) :
+      0
+    return ~~((tl / this.config.sampleRate) * 1000) + tmp
   }
   isRecording(): boolean {
     return this.recording
@@ -271,7 +273,6 @@ export class Microphone {
               rTotalLen += r.length
             }
             this.finalBuffers.push(this.mergeBuffers(results, rTotalLen))
-            this.tempElapsed = 0
             this.startRecording = null
             console.log('finalbuff', this.finalBuffers)
             this.processing = false
@@ -367,14 +368,17 @@ export class Microphone {
 
   // remove the progress subject from the onaudioprocess event
   _progressTick() {
-    let now = new Date()
-    this.tempElapsed = (now.valueOf() - this.startRecording.valueOf() )
-    if (this.recording) {
-      this.progressSubject.next(this.getElapsed())
-      setTimeout(() => {
-        this._progressTick()
-      },10)
+    if (this.pinterval) {
+      return
     }
+    this.pinterval = setInterval(() => {
+      if (!this.recording) {
+        clearInterval(this.pinterval)
+        this.pinterval = null
+      } else {
+        this.progressSubject.next(this.getElapsed())
+      }
+    }, 100)
   }
 
   mergeBuffers(recBuffers: Float32Array[], recLength: number): Float32Array {

@@ -77,12 +77,8 @@ export class WebAudioPlayer {
     while (v >>= 1) {p <<= 1}
     return p
   }
-  play (startPos = null) {
-    if (startPos === null) {
-        startPos = this.currentTime
-    } else {
-        this.currentTime = startPos
-    }
+  play(startPos = 0) {
+    this.currentTime = startPos
     this.startOffset = this.currentTime // stash this
     this.source = this.audioContext.createBufferSource()
     this.source.buffer = this.buffer
@@ -94,14 +90,13 @@ export class WebAudioPlayer {
       this.ended = true
       this.progressSubject.next(-1)
     }
-    this.source.start(this.audioContext.currentTime, this.currentTime)
+    this.source.start(0, this.currentTime)
     this.startPlay = new Date()
     this.playing = true
     this.startProgress()
   }
-  playMs(startPos = null) {
-    let time = startPos ? (startPos/1000) : null
-    this.play(time)
+  playMs(startMs = 0) {
+    this.play(startMs/1000)
   }
 
   startProgress() {
