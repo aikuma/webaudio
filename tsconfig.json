@@ -8,7 +8,7 @@
     "module": "es6",
     "target": "es5",
     "strict": false,
-    "importHelpers": false,
+    "importHelpers": true,
     "noImplicitReturns": true,
     "strictNullChecks": false,
     "sourceMap": true,

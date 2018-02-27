@@ -1,18 +1,29 @@
-# Aikumic
+# Aikuma Web Audio javascript library
 
-A microphone service.
+Web Audio-based library created for use with language apps/sites.
 
-### project features
+ - Microphone library
+ - Web Audio player library
+ - ES6 module with Typescript definitions
+ - Repo has client testing framework (work in progress)
+
+## Microphone
  - Web Audio microphone 
  - Stores raw PCM audio to indexeddb to minimize RAM usage (with service worker)
- - Records segments to support undo operations
+ - Records audio segments to support undo operations
  - Segments are resampled to given supplied sample rate
  - Supports wav export of segments or entire recording (all segments)
- - simple fade in/out to minimize start stop clicking
- - microphone recording time observable (decoupled from script processor node)
- - playback features
+ - Simple fade in/out to avoid start/stop clicking
+ - Microphone recording time observable (decoupled from script processor node)
+ - Exports as Wav Blob
+ - Basic playback
 
-## developer documentation
+## Web Audio Player
+ - Web Audio player service
+ - Intended for large files and random playback seek position
+ - Playback progress time observable (decoupled from script processor node)
+
+## Developer documentation
 how to build and test:
  - clone the repository
  - in the cloned folder, run `npm install`
