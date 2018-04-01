@@ -40,7 +40,7 @@ Based on https://github.com/wix/typescript-boilerplate
 ### API example
 
 ```
-import { Microphone } from 'aikumic'
+import { Microphone } from '@aikuma/webaudio'
 const mic = new Microphone({debug: true, resampleRate: 16000})
 mic.observeProgress().subscribe((time) => {
   console.log('time:',time)
