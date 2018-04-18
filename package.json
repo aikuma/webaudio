@@ -1,6 +1,6 @@
 {
   "name": "@aikuma/webaudio",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Aikuma Microphone and WebPlayer Library",
   "author": "Mat Bettinson (mat.bettinson@gmail.com)",
   "license": "MIT",

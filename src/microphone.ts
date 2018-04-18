@@ -70,16 +70,11 @@ export class Microphone {
       console.log('aikumic:', ...args)
     }
   }
-  async connect() {
+  async connect(): Promise<any> {
     if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-      throw new Error('No getUserMedia')
+      throw new Error('No mediaDevices.getUserMedia in browser!')
     }
-    let ms: MediaStream
-    try {
-      ms = await navigator.mediaDevices.getUserMedia({audio: true, video: false})
-    } catch(e) {
-      throw new Error("Can't get microphone stream "+e)
-    }
+    let ms: MediaStream = await navigator.mediaDevices.getUserMedia({audio: true, video: false})
     this.sourceNode = this.audioContext.createMediaStreamSource(ms)
     this.stream = ms
   }
