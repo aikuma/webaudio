@@ -3,7 +3,7 @@ import { Observable } from 'rxjs/Observable'
 // worker is a tweaked version of the one from RecorderJS - assumes mono, removed wav writing
 export function aikumicWorker() {
   let recLength: number = 0, recBuffers: Float32Array[] = [], tempLength: number = 0,
-      sampleRate: number, db: IDBDatabase
+      sampleRate: number, db: IDBDatabase, experimentalStorage: boolean = false
   this.onmessage = function (e) {
     // worker commands
     switch (e.data.command) {
@@ -24,16 +24,21 @@ export function aikumicWorker() {
         break
     }
   }
-  function init(config: {sampleRate: number}) {
+  function init(config: {sampleRate: number, experimentalStorage: boolean}) {
     sampleRate = config.sampleRate
-    db_open()
-    .then((d) => {
-      db = d
-      return clear()
-    })
-    .then(() => {
+    experimentalStorage = config.experimentalStorage ? true: false
+    if (experimentalStorage) {
+      db_open()
+      .then((d) => {
+        db = d
+        return clear()
+      })
+      .then(() => {
+        this.postMessage({command: 'ready', data: null})
+      })
+    } else {
       this.postMessage({command: 'ready', data: null})
-    })
+    }
   }
   function record(inputBuffer: Float32Array, dtype: number) {
     if (dtype === 1) {
@@ -46,13 +51,16 @@ export function aikumicWorker() {
     recBuffers.push(inputBuffer)
     recLength += inputBuffer.length
     tempLength += inputBuffer.length
-    if (recBuffers.length > 15) {
-      let mb = mergeBuffers(recBuffers, tempLength)
-      tempLength = 0
-      recBuffers = [] // zero this out because it might take a while to persist to disk
-      db_add('rawdata', mb)
+    if (experimentalStorage) {
+      if (recBuffers.length > 15) {
+        let mb = mergeBuffers(recBuffers, tempLength)
+        tempLength = 0
+        recBuffers = [] // zero this out because it might take a while to persist to disk
+        db_add('rawdata', mb)
+      }
     }
   }
+
   function fade(type: string, fa: Float32Array) {
     if (type === 'in') {
       for (let i = 0; i < 2000; ++i) {
@@ -71,24 +79,29 @@ export function aikumicWorker() {
   }
 
   function sendBuffers() {
-    let objectStore = db.transaction("rawdata").objectStore("rawdata");
-    let tdatalen: number = 0
-    let self = this
-    objectStore.openCursor().onsuccess = function(event) {
-      let cursor = this.result
-      if (cursor) {
-        let fdata: Float32Array = cursor.value.data
-        tdatalen += fdata.length
-        self.postMessage({command: 'streamBuffer', data: fdata, remaining: recLength - tdatalen})
-        cursor.continue()
-      }
-      else {
-        //console.log('tempLength', tempLength)
-        if (tempLength > 0) {
-          let tdata = mergeBuffers(recBuffers, tempLength)
-          self.postMessage({command: 'streamBuffer', data: tdata, remaining: 0})
+    if (experimentalStorage) {
+      let objectStore = db.transaction("rawdata").objectStore("rawdata")
+      let tdatalen: number = 0
+      let self = this
+      objectStore.openCursor().onsuccess = function(event) {
+        let cursor = this.result
+        if (cursor) {
+          let fdata: Float32Array = cursor.value.data
+          tdatalen += fdata.length
+          self.postMessage({command: 'streamBuffer', data: fdata, remaining: recLength - tdatalen})
+          cursor.continue()
+        }
+        else {
+          //console.log('tempLength', tempLength)
+          if (tempLength > 0) {
+            let tdata = mergeBuffers(recBuffers, tempLength)
+            self.postMessage({command: 'streamBuffer', data: tdata, remaining: 0})
+          }
         }
       }
+    } else {
+      let buffer = mergeBuffers(recBuffers, recLength)
+      this.postMessage({command: 'streamBuffer', data: buffer, remaining: 0})
     }
   }
   
@@ -96,7 +109,11 @@ export function aikumicWorker() {
     recLength = 0
     tempLength = 0
     recBuffers = []
-    return db_clear('rawdata')
+    if (experimentalStorage) {
+      return db_clear('rawdata')
+    } else {
+      return Promise.resolve()
+    }
   }
   function mergeBuffers(recBuffers: Float32Array[], recLength: number): Float32Array {
     let result = new Float32Array(recLength)

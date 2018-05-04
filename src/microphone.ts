@@ -29,7 +29,7 @@ export class Microphone {
   stream: MediaStream
   progressSubject: Subject<any> = new Subject()
   node: ScriptProcessorNode
-  config: {bufferLen: number, numChannels: number, sampleRate: number} = {bufferLen: 8192, numChannels: 1, sampleRate: 16000}
+  config: {bufferLen: number, numChannels: number, sampleRate: number, experimentalStorage: boolean} = {bufferLen: 8192, numChannels: 1, sampleRate: 16000, experimentalStorage: false}
   recording: boolean = false
   playing: boolean = false
   hasData: boolean = false
@@ -414,7 +414,8 @@ export class Microphone {
     this.worker.postMessage({
       command: 'init',
       config: {
-        sampleRate: this.audioContext.sampleRate
+        sampleRate: this.audioContext.sampleRate,
+        experimentalStorage: this.config.experimentalStorage
       }
     })
   }

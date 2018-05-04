@@ -9,7 +9,6 @@ Web Audio-based library created for use with language apps/sites.
 
 ## Microphone
  - Web Audio microphone 
- - Stores raw PCM audio to indexeddb to minimize RAM usage (with service worker)
  - Records audio segments to support undo operations
  - Segments are resampled to given supplied sample rate
  - Supports wav export of segments or entire recording (all segments)
@@ -17,6 +16,7 @@ Web Audio-based library created for use with language apps/sites.
  - Microphone recording time observable (decoupled from script processor node)
  - Exports as Wav Blob
  - Basic playback
+ - Experimental: Stores raw PCM audio to indexeddb to minimize RAM usage (with service worker)
 
 ## Web Audio Player
  - Web Audio player service
@@ -56,7 +56,7 @@ mic.stop().then(() => {
 
 `const mic = new Microphone(config)`
 
-Config is optional. Valid config properties are bufferLen (number) defaulting to 8192, numChannels (number) defaulting to 1, and sampleRate (number) defaulting to 16,000, debug (boolean) defaulting to false.
+Config is optional. Valid config properties are bufferLen (number) defaulting to 8192, numChannels (number) defaulting to 1, and sampleRate (number) defaulting to 16,000, debug (boolean) defaulting to false and experimentalStorage (boolean) defaulting to false.
 
 ### Methods
 
