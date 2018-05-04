@@ -24,14 +24,11 @@ export function aikumicWorker() {
         break
     }
   }
-  function init(config: {sampleRate: number}) {
+  async function init(config: {sampleRate: number}) {
     sampleRate = config.sampleRate
-    //console.log('worker init', config)
-    db_open()
-    .then((d) => {
-      db = d
-      clear()
-    })
+    db = await db_open()
+    await clear()
+    this.postMessage({command: 'ready', data: null})
   }
   function record(inputBuffer: Float32Array, dtype: number) {
     if (dtype === 1) {
@@ -45,9 +42,10 @@ export function aikumicWorker() {
     recLength += inputBuffer.length
     tempLength += inputBuffer.length
     if (recBuffers.length > 15) {
-      db_add('rawdata', mergeBuffers(recBuffers, tempLength))
+      let mb = mergeBuffers(recBuffers, tempLength)
       tempLength = 0
-      recBuffers = []
+      recBuffers = [] // zero this out because it might take a while to persist to disk
+      db_add('rawdata', mb)
     }
   }
   function fade(type: string, fa: Float32Array) {
@@ -89,11 +87,11 @@ export function aikumicWorker() {
     }
   }
   
-  function clear() {
+  async function clear() {
     recLength = 0
     tempLength = 0
     recBuffers = []
-    db_clear('rawdata')
+    await db_clear('rawdata')
   }
   function mergeBuffers(recBuffers: Float32Array[], recLength: number): Float32Array {
     let result = new Float32Array(recLength)

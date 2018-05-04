@@ -37,6 +37,7 @@ export class Microphone {
   stopTick: number = 0
   startFlag: boolean = false
   worker: Worker
+  ready: boolean = false
   startRecording: Date = null
   finalBuffers: Float32Array[] = []
   callbacks: {getBuffer: Function[]} = {
@@ -79,6 +80,9 @@ export class Microphone {
     this.stream = ms
   }
   record(): void {
+    if (!this.ready) {
+      throw new Error('Microphone worker is not ready.')
+    }
     if (!this.sourceNode) {
       throw new Error('No source node, did you call .connect() first?')
     }
@@ -147,6 +151,9 @@ export class Microphone {
   }
   isRecording(): boolean {
     return this.recording
+  }
+  isReady(): boolean {
+    return this.ready
   }
   isPlaying(): boolean {
     return this.playing
@@ -398,7 +405,11 @@ export class Microphone {
     this.worker = makeInlineWorker(aikumicWorker)
     this.obsWorker = new Subject()
     this.worker.onmessage = (e) => {
-      this.obsWorker.next(e.data)
+      if (e.data.command === 'ready') {
+        this.ready = true
+      } else {
+        this.obsWorker.next(e.data)
+      }
     }
     this.worker.postMessage({
       command: 'init',
