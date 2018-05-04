@@ -24,11 +24,16 @@ export function aikumicWorker() {
         break
     }
   }
-  async function init(config: {sampleRate: number}) {
+  function init(config: {sampleRate: number}) {
     sampleRate = config.sampleRate
-    db = await db_open()
-    await clear()
-    this.postMessage({command: 'ready', data: null})
+    db_open()
+    .then((d) => {
+      db = d
+      return clear()
+    })
+    .then(() => {
+      this.postMessage({command: 'ready', data: null})
+    })
   }
   function record(inputBuffer: Float32Array, dtype: number) {
     if (dtype === 1) {
@@ -87,11 +92,11 @@ export function aikumicWorker() {
     }
   }
   
-  async function clear() {
+  function clear(): Promise<any> {
     recLength = 0
     tempLength = 0
     recBuffers = []
-    await db_clear('rawdata')
+    return db_clear('rawdata')
   }
   function mergeBuffers(recBuffers: Float32Array[], recLength: number): Float32Array {
     let result = new Float32Array(recLength)
