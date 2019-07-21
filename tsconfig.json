@@ -2,10 +2,10 @@
   "compilerOptions": {
     "moduleResolution": "node",
     "lib": [
-      "es2015",
+      "es2018",
       "dom"
     ],
-    "module": "es6",
+    "module": "es2015",
     "target": "es5",
     "strict": false,
     "importHelpers": true,

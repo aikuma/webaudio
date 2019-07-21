@@ -48,7 +48,7 @@ export class WebAudioPlayer {
     return new Promise((resolve) => {
       let fileReader = new FileReader()
       fileReader.onloadend = () => {
-        this._decodeAndInitialize(fileReader.result)
+        this._decodeAndInitialize(fileReader.result as ArrayBuffer)
         .then(() => {
           resolve()
         })

@@ -47,7 +47,7 @@ export class Microphone {
   obsWorker: Subject<any>
   processing: boolean = false
   pinterval: number = null
-  constructor(config?: {audioContext?: AudioContext, debug?: boolean, resampleRate?: number}) {
+  constructor(config?: {audioContext?: AudioContext, debug?: boolean, bufferLen?: number, resampleRate?: number}) {
     this.audioContext = config && config.audioContext ? config.audioContext : new AudioContext()
     this.debugMode = config && config.debug ? config.debug : false
     if (config && config.resampleRate ) {
@@ -56,6 +56,9 @@ export class Microphone {
       } else {
         this.config.sampleRate = config.resampleRate
       }
+    }
+    if (config && config.bufferLen ) {
+      this.config.bufferLen = config.bufferLen
     }
     this._init()
   }
@@ -276,7 +279,7 @@ export class Microphone {
             }
             this.finalBuffers.push(this.mergeBuffers(results, rTotalLen))
             this.startRecording = null
-            console.log('finalbuff', this.finalBuffers)
+            this.debug('finalbuff', this.finalBuffers)
             this.processing = false
             this.worker.postMessage({command: 'clear'})
             resolve(this.getLastLength())
@@ -291,6 +294,16 @@ export class Microphone {
     this.finalBuffers = []
     this.hasData = false
     this.worker.postMessage({command: 'clear'})
+  }
+
+  clearLastSegment() {
+    if (!this.hasData) {
+      throw new Error('No segments to clear.')
+    } else if (this.getSegmentCount() === 1) {
+      this.clear()
+    } else {
+      this.finalBuffers.pop()
+    }
   }
 
   async playSegment(segment: number): Promise<any> {
@@ -312,6 +325,10 @@ export class Microphone {
       throw new Error('segment out of range')
     }
     return this._arraysToWav([this.finalBuffers[segment]])
+  }
+
+  exportLastSegmentWav(): Blob {
+    return this._arraysToWav([this.finalBuffers[this.finalBuffers.length -1]])
   }
 
   exportAllWav(): Blob | null {
